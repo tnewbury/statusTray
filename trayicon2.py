@@ -72,7 +72,7 @@ class TaskBarIcon(wx.TaskBarIcon):
     def on_patches(self, event):
         #print "apt-get upgrade -s | egrep -o '(^[0-9]+)'"
         cmdOutput = subprocess.check_output(["apt-get upgrade -s | egrep -o '(^[0-9]+)'"],shell=True)
-	if len(cmdOutput) >= 1:
+	if len(cmdOutput) >= 3:
             print "Patches to be had"
             self.TRAY_ICON = "icon_red.png"
             return 1
