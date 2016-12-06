@@ -9,6 +9,7 @@ TRAY_TOOLTIP = 'System Tray Demo'
 
 def create_menu_item(menu, label, func):
     item = wx.MenuItem(menu, -1, label)
+    item.SetBitmap(wx.Bitmap('icon.png'))
     menu.Bind(wx.EVT_MENU, func, id=item.GetId())
     menu.AppendItem(item)
     return item
@@ -17,6 +18,7 @@ class TaskBarIcon(wx.TaskBarIcon):
     
     def __init__(self, frame):
 
+        self.checkpatches = 0
         self.TRAY_ICON = 'icon.png'
 	self.frame = frame
         super(TaskBarIcon, self).__init__()
@@ -24,17 +26,17 @@ class TaskBarIcon(wx.TaskBarIcon):
         self.Bind(wx.EVT_TASKBAR_LEFT_DOWN, self.on_left_down)
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.on_update, self.timer)
-        self.timer.Start(100)
+        self.timer.Start(500)
         
 
 
     def CreatePopupMenu(self):
         menu = wx.Menu()
-        create_menu_item(menu, 'Backup', self.on_backup)
-        create_menu_item(menu, 'Restore', self.on_restore)
-	create_menu_item(menu, 'Patches', self.on_patches)
+        create_menu_item(menu, '&Backup', self.on_backup)
+        create_menu_item(menu, '&Restore', self.on_restore)
+	create_menu_item(menu, '&Patches', self.on_patches)
         menu.AppendSeparator()
-        create_menu_item(menu, 'Exit', self.on_exit)
+        create_menu_item(menu, 'E&xit', self.on_exit)
 	return menu
 
     def set_icon(self, path):
@@ -49,7 +51,10 @@ class TaskBarIcon(wx.TaskBarIcon):
         #    self.TRAY_ICON = "icon_red.png"
         #else:
         #    self.TRAY_ICON = "icon.png"
-	self.set_icon(self.TRAY_ICON)
+	self.checkpatches += 1
+        if self.checkpatches == 3600:
+                self.on_patches(wx.EVT_TASKBAR_LEFT_DOWN)
+        self.set_icon(self.TRAY_ICON)
 
 
     def on_backup(self, event):
@@ -67,9 +72,10 @@ class TaskBarIcon(wx.TaskBarIcon):
     def on_patches(self, event):
         #print "apt-get upgrade -s | egrep -o '(^[0-9]+)'"
         cmdOutput = subprocess.check_output(["apt-get upgrade -s | egrep -o '(^[0-9]+)'"],shell=True)
-	if len(cmdOutput) >= 3:
+	if len(cmdOutput) >= 1:
             print "Patches to be had"
             self.TRAY_ICON = "icon_red.png"
+            return 1
 
 
     def on_exit(self, event):
