@@ -3,6 +3,8 @@ import wx
 import time
 #from subprocess import Popen, PIPE
 import subprocess
+import re
+
 
 TRAY_TOOLTIP = 'System Tray Demo'
 #TRAY_ICON = 'icon.png'
@@ -27,8 +29,12 @@ class TaskBarIcon(wx.TaskBarIcon):
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.on_update, self.timer)
         self.timer.Start(500)
-        
-
+        cmdOutput = subprocess.check_output(["cat /proc/version"],shell=True)
+        result = re.search('Hat',cmdOutput)
+        if result.group(0) == 'Hat':
+            self.lversion = 0
+	else:
+            self.lversion = 1
 
     def CreatePopupMenu(self):
         menu = wx.Menu()
@@ -71,12 +77,21 @@ class TaskBarIcon(wx.TaskBarIcon):
 
     def on_patches(self, event):
         #print "apt-get upgrade -s | egrep -o '(^[0-9]+)'"
-        cmdOutput = subprocess.check_output(["apt-get upgrade -s | egrep -o '(^[0-9]+)'"],shell=True)
-	if len(cmdOutput) >= 3:
-            print "Patches to be had"
-            self.TRAY_ICON = "icon_red.png"
-            return 1
-
+        if self.lversion == 1:
+            cmdOutput = subprocess.check_output(["apt-get upgrade -s | wc -l"],shell=True)
+	    if cmdOutput >= 5:
+                print "Patches to be had"
+                self.TRAY_ICON = "icon_red.png"
+            else:
+                self.TRAY_ICON = "icon_green.png"
+                
+        if self.lversion == 0:
+            cmdOutput = subprocess.check_output(["yum check-update | wc -l"],shell=True)
+            if cmdOutput >= 2:
+                print "Patches to be had"
+                self.TRAY_ICON = "icon_red.png"
+            else:
+                self.TRAY_ICON = "icon_green.png"
 
     def on_exit(self, event):
         wx.CallAfter(self.Destroy)
