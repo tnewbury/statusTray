@@ -23,6 +23,9 @@ class TaskBarIcon(wx.TaskBarIcon):
         self.checkpatches = 0
         self.TRAY_ICON = 'icon.png'
 	self.patchicon = 'gtick.png'
+        self.backupicon = 'gtick.png'
+        self.restoreicon = 'gtick.png'
+
 
         self.frame = frame
         super(TaskBarIcon, self).__init__()
@@ -40,8 +43,8 @@ class TaskBarIcon(wx.TaskBarIcon):
 
     def CreatePopupMenu(self):
         menu = wx.Menu()
-        create_menu_item(menu, '&Backup', self.on_backup, 'gtick.png')
-        create_menu_item(menu, '&Restore', self.on_restore, 'rcross.png')
+        create_menu_item(menu, '&Backup', self.on_backup, self.backupicon)
+        create_menu_item(menu, '&Restore', self.on_restore, self.restoreicon)
 	create_menu_item(menu, '&Patches', self.on_patches, self.patchicon)
         menu.AppendSeparator()
         create_menu_item(menu, 'E&xit', self.on_exit, 'rcross.png')
@@ -68,14 +71,18 @@ class TaskBarIcon(wx.TaskBarIcon):
     def on_backup(self, event):
         cmdOutput = subprocess.Popen(["zenity --warning --text 'Backing up your shit'"],shell=True,stdout=subprocess.PIPE) 
         self.TRAY_ICON = "icon_red.png"
+        self.backupicon = "gup.png"
         cmdOutput = subprocess.Popen(["lsyncd -nodaemon -rsync /home/`whoami` /nfs/test/"],shell=True,stdout=subprocess.PIPE)
         self.TRAY_ICON = "icon_green.png"
+        self.backupicon = "gtick.png"
 
     def on_restore(self, event):
         cmdOutput = subprocess.Popen(["zenity --warning --text 'Restoring. Youre shit'"],shell=True,stdout=subprocess.PIPE)
-        self.TRAY_ICON = "icon.png" 
+        self.TRAY_ICON = "icon.png"
+        self.restoreicon = "gdown.png" 
         cmdOutput = subprocess.Popen(["lsyncd -nodaemon -rsync /nfs/test /home/`whoami`"],shell=True,stdout=subprocess.PIPE)
         self.TRAY_ICON = "icon_green.png"
+        self.restoreicon = "gtick.png"
 
     def on_patches(self, event):
         #print "apt-get upgrade -s | egrep -o '(^[0-9]+)'"
@@ -94,8 +101,10 @@ class TaskBarIcon(wx.TaskBarIcon):
             if cmdOutput >= 2:
                 print "Patches to be had"
                 self.TRAY_ICON = "icon_red.png"
+                self.patchicon = "rcross.png"
             else:
                 self.TRAY_ICON = "icon_green.png"
+                self.patchicon = "gtick.png"
 
     def on_exit(self, event):
         wx.CallAfter(self.Destroy)
