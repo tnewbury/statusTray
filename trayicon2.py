@@ -25,7 +25,7 @@ class TaskBarIcon(wx.TaskBarIcon):
 	self.patchicon = 'gtick.png'
         self.backupicon = 'gtick.png'
         self.restoreicon = 'gtick.png'
-
+        self.healthscore = 3
 
         self.frame = frame
         super(TaskBarIcon, self).__init__()
@@ -45,7 +45,7 @@ class TaskBarIcon(wx.TaskBarIcon):
         menu = wx.Menu()
         create_menu_item(menu, '&Backup', self.on_backup, self.backupicon)
         create_menu_item(menu, '&Restore', self.on_restore, self.restoreicon)
-	create_menu_item(menu, '&Patches', self.on_patches, self.patchicon)
+	create_menu_item(menu, '&Patched', self.on_patches, self.patchicon)
         menu.AppendSeparator()
         create_menu_item(menu, 'E&xit', self.on_exit, 'rcross.png')
 	return menu
@@ -65,6 +65,10 @@ class TaskBarIcon(wx.TaskBarIcon):
 	self.checkpatches += 1
         if self.checkpatches == 3600:
                 self.on_patches(wx.EVT_TASKBAR_LEFT_DOWN)
+        if self.healthscore >= 3:
+                self.TRAY_ICON = "icon_green.png"
+        else:
+                self.TRAY_ICON = "icon_red.png"
         self.set_icon(self.TRAY_ICON)
 
 
@@ -72,17 +76,21 @@ class TaskBarIcon(wx.TaskBarIcon):
         cmdOutput = subprocess.Popen(["zenity --warning --text 'Backing up your shit'"],shell=True,stdout=subprocess.PIPE) 
         self.TRAY_ICON = "icon_red.png"
         self.backupicon = "gup.png"
-        cmdOutput = subprocess.Popen(["lsyncd -nodaemon -rsync /home/`whoami` /nfs/test/"],shell=True,stdout=subprocess.PIPE)
+        self.healthscore -= 1
+        cmdOutput = subprocess.Popen(["lsyncd -nodaemon -rsync /home/`whoami`/ /nfs/test/"],shell=True,stdout=subprocess.PIPE)
         self.TRAY_ICON = "icon_green.png"
         self.backupicon = "gtick.png"
+        self.healthscore += 1
 
     def on_restore(self, event):
         cmdOutput = subprocess.Popen(["zenity --warning --text 'Restoring. Youre shit'"],shell=True,stdout=subprocess.PIPE)
         self.TRAY_ICON = "icon.png"
-        self.restoreicon = "gdown.png" 
+        self.restoreicon = "gdown.png"
+        self.healthscore -= 1 
         cmdOutput = subprocess.Popen(["lsyncd -nodaemon -rsync /nfs/test /home/`whoami`"],shell=True,stdout=subprocess.PIPE)
         self.TRAY_ICON = "icon_green.png"
         self.restoreicon = "gtick.png"
+        self.healthscore += 1
 
     def on_patches(self, event):
         #print "apt-get upgrade -s | egrep -o '(^[0-9]+)'"
@@ -90,21 +98,25 @@ class TaskBarIcon(wx.TaskBarIcon):
             cmdOutput = subprocess.check_output(["apt-get upgrade -s | wc -l"],shell=True)
 	    if cmdOutput >= 10:
                 print "Patches to be had"
-                self.TRAY_ICON = "icon_red.png"
+                #self.TRAY_ICON = "icon_red.png"
                 self.patchicon = "rcross.png"
+                self.healthscore -= 1
             else:
-                self.TRAY_ICON = "icon_green.png"
+                #self.TRAY_ICON = "icon_green.png"
                 self.patchicon = "gtick.png"
+                self.healthscore = 3
                 
         if self.lversion == 0:
             cmdOutput = subprocess.check_output(["yum check-update | wc -l"],shell=True)
             if cmdOutput >= 2:
                 print "Patches to be had"
-                self.TRAY_ICON = "icon_red.png"
+                #self.TRAY_ICON = "icon_red.png"
                 self.patchicon = "rcross.png"
+                self.healthscore -= 1
             else:
-                self.TRAY_ICON = "icon_green.png"
+                #self.TRAY_ICON = "icon_green.png"
                 self.patchicon = "gtick.png"
+                self.healthscore = 3
 
     def on_exit(self, event):
         wx.CallAfter(self.Destroy)
