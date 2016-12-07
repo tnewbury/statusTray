@@ -82,7 +82,7 @@ class TaskBarIcon(wx.TaskBarIcon):
         self.TRAY_ICON = ICON_LOCATION + "icon_red.png"
         self.backupicon = ICON_LOCATION + "gup.png"
         self.healthscore -= 1
-        cmdOutput = subprocess.Popen(["lsyncd -nodaemon -rsync /home/`whoami`/ /nfs/test/"],shell=True,stdout=subprocess.PIPE)
+        cmdOutput = subprocess.Popen(["lsyncd -nodaemon -rsync /home/`whoami` /nfs/home/`whoami`"],shell=True,stdout=subprocess.PIPE)
         self.TRAY_ICON = ICON_LOCATION + "icon_green.png"
         self.backupicon = ICON_LOCATION + "gtick.png"
         self.healthscore += 1
@@ -92,7 +92,7 @@ class TaskBarIcon(wx.TaskBarIcon):
         self.TRAY_ICON = ICON_LOCATION + "icon.png"
         self.restoreicon = ICON_LOCATION + "gdown.png"
         self.healthscore -= 1 
-        cmdOutput = subprocess.Popen(["lsyncd -nodaemon -rsync /nfs/test /home/`whoami`"],shell=True,stdout=subprocess.PIPE)
+        cmdOutput = subprocess.Popen(["lsyncd -nodaemon -rsync /nfs/home/`whoami` /home/`whoami`"],shell=True,stdout=subprocess.PIPE)
         self.TRAY_ICON = ICON_LOCATION + "icon_green.png"
         self.restoreicon = ICON_LOCATION + "gtick.png"
         self.healthscore += 1
