@@ -6,12 +6,12 @@ import subprocess
 import re
 
 
-TRAY_TOOLTIP = 'System Tray Demo'
+TRAY_TOOLTIP = 'Backup/patch system'
 #TRAY_ICON = 'icon.png'
 
-def create_menu_item(menu, label, func):
+def create_menu_item(menu, label, func, iconpath):
     item = wx.MenuItem(menu, -1, label)
-    item.SetBitmap(wx.Bitmap('icon.png'))
+    item.SetBitmap(wx.Bitmap(iconpath))
     menu.Bind(wx.EVT_MENU, func, id=item.GetId())
     menu.AppendItem(item)
     return item
@@ -22,7 +22,9 @@ class TaskBarIcon(wx.TaskBarIcon):
 
         self.checkpatches = 0
         self.TRAY_ICON = 'icon.png'
-	self.frame = frame
+	self.patchicon = 'gtick.png'
+
+        self.frame = frame
         super(TaskBarIcon, self).__init__()
         self.set_icon(self.TRAY_ICON)
         self.Bind(wx.EVT_TASKBAR_LEFT_DOWN, self.on_left_down)
@@ -38,11 +40,11 @@ class TaskBarIcon(wx.TaskBarIcon):
 
     def CreatePopupMenu(self):
         menu = wx.Menu()
-        create_menu_item(menu, '&Backup', self.on_backup)
-        create_menu_item(menu, '&Restore', self.on_restore)
-	create_menu_item(menu, '&Patches', self.on_patches)
+        create_menu_item(menu, '&Backup', self.on_backup, 'gtick.png')
+        create_menu_item(menu, '&Restore', self.on_restore, 'rcross.png')
+	create_menu_item(menu, '&Patches', self.on_patches, self.patchicon)
         menu.AppendSeparator()
-        create_menu_item(menu, 'E&xit', self.on_exit)
+        create_menu_item(menu, 'E&xit', self.on_exit, 'rcross.png')
 	return menu
 
     def set_icon(self, path):
@@ -82,8 +84,10 @@ class TaskBarIcon(wx.TaskBarIcon):
 	    if cmdOutput >= 10:
                 print "Patches to be had"
                 self.TRAY_ICON = "icon_red.png"
+                self.patchicon = "rcross.png"
             else:
                 self.TRAY_ICON = "icon_green.png"
+                self.patchicon = "gtick.png"
                 
         if self.lversion == 0:
             cmdOutput = subprocess.check_output(["yum check-update | wc -l"],shell=True)
