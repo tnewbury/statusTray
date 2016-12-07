@@ -5,7 +5,7 @@ import time
 import subprocess
 import re
 
-ICON_LOCATION = '/some/path'
+ICON_LOCATION = '/home/trev/dev/statusTray/'
 TRAY_TOOLTIP = 'Backup/patch system'
 #TRAY_ICON = 'icon.png'
 
@@ -20,12 +20,22 @@ class TaskBarIcon(wx.TaskBarIcon):
     
     def __init__(self, frame):
 
+
         self.checkpatches = 0
         self.TRAY_ICON = ICON_LOCATION + 'icon.png'
 	self.patchicon = ICON_LOCATION + 'gtick.png'
         self.backupicon = ICON_LOCATION + 'gtick.png'
         self.restoreicon = ICON_LOCATION + 'gtick.png'
         self.healthscore = 3
+
+        cmdOutput = subprocess.check_output(["cat /proc/version"],shell=True)
+        result = re.search('Hat|Ubuntu',cmdOutput)
+        if result.group(0) == 'Hat':
+            self.lversion = 0
+        else:
+            self.lversion = 1
+        self.on_patches(wx.EVT_TASKBAR_LEFT_DOWN)
+
 
         self.frame = frame
         super(TaskBarIcon, self).__init__()
@@ -34,18 +44,12 @@ class TaskBarIcon(wx.TaskBarIcon):
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.on_update, self.timer)
         self.timer.Start(500)
-        cmdOutput = subprocess.check_output(["cat /proc/version"],shell=True)
-        result = re.search('Hat|Ubuntu',cmdOutput)
-        if result.group(0) == 'Hat':
-            self.lversion = 0
-	else:
-            self.lversion = 1
 
     def CreatePopupMenu(self):
         menu = wx.Menu()
-        create_menu_item(menu, '&Backup', self.on_backup, self.backupicon)
-        create_menu_item(menu, '&Restore', self.on_restore, self.restoreicon)
-	create_menu_item(menu, '&Patched', self.on_patches, self.patchicon)
+        create_menu_item(menu, '&Backup data', self.on_backup, self.backupicon)
+        create_menu_item(menu, '&Restore data', self.on_restore, self.restoreicon)
+	create_menu_item(menu, '&Install Patches', self.patch_up, self.patchicon)
         menu.AppendSeparator()
         create_menu_item(menu, 'E&xit', self.on_exit, ICON_LOCATION + 'rcross.png')
 	return menu
@@ -55,7 +59,7 @@ class TaskBarIcon(wx.TaskBarIcon):
         self.SetIcon(icon, TRAY_TOOLTIP)
 
     def on_left_down(self, event):
-        cmdOutput = subprocess.Popen(["sudo apt-get update; sudo apt-get -y upgrade"],shell=True,stdout=subprocess.PIPE)
+        cmdOutput = subprocess.Popen(["gnome-software --mode=updates"],shell=True,stdout=subprocess.PIPE)
         
     def on_update(self, event):
         #if self.TRAY_ICON == "icon.png":
@@ -93,12 +97,15 @@ class TaskBarIcon(wx.TaskBarIcon):
         self.restoreicon = ICON_LOCATION + "gtick.png"
         self.healthscore += 1
 
+    def patch_up(self, event):
+        cmdOutput = subprocess.Popen(["gnome-software --mode=updates"],shell=True,stdout=subprocess.PIPE)
+
     def on_patches(self, event):
         #print "apt-get upgrade -s | egrep -o '(^[0-9]+)'"
         if self.lversion == 1:
             cmdOutput = subprocess.check_output(["apt-get upgrade -s | wc -l"],shell=True)
 	    if cmdOutput >= 10:
-                print "Patches to be had"
+                #print "Patches to be had"
                 self.patchicon = ICON_LOCATION + "rcross.png"
                 self.healthscore -= 1
             else:
