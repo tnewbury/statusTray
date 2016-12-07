@@ -30,7 +30,7 @@ class TaskBarIcon(wx.TaskBarIcon):
         self.Bind(wx.EVT_TIMER, self.on_update, self.timer)
         self.timer.Start(500)
         cmdOutput = subprocess.check_output(["cat /proc/version"],shell=True)
-        result = re.search('Hat',cmdOutput)
+        result = re.search('Hat|Ubuntu',cmdOutput)
         if result.group(0) == 'Hat':
             self.lversion = 0
 	else:
@@ -79,7 +79,7 @@ class TaskBarIcon(wx.TaskBarIcon):
         #print "apt-get upgrade -s | egrep -o '(^[0-9]+)'"
         if self.lversion == 1:
             cmdOutput = subprocess.check_output(["apt-get upgrade -s | wc -l"],shell=True)
-	    if cmdOutput >= 5:
+	    if cmdOutput >= 10:
                 print "Patches to be had"
                 self.TRAY_ICON = "icon_red.png"
             else:
