@@ -59,7 +59,7 @@ class TaskBarIcon(wx.TaskBarIcon):
         self.SetIcon(icon, TRAY_TOOLTIP)
 
     def on_left_down(self, event):
-        cmdOutput = subprocess.Popen(["gnome-software --mode=updates"],shell=True,stdout=subprocess.PIPE)
+        cmdOutput = subprocess.Popen(["apt-get -ys upgrade"],shell=True,stdout=subprocess.PIPE)
         
     def on_update(self, event):
         #if self.TRAY_ICON == "icon.png":
@@ -104,7 +104,7 @@ class TaskBarIcon(wx.TaskBarIcon):
         #print "apt-get upgrade -s | egrep -o '(^[0-9]+)'"
         if self.lversion == 1:
             cmdOutput = subprocess.check_output(["apt-get upgrade -s | wc -l"],shell=True)
-	    if cmdOutput >= 10:
+            if int(cmdOutput) >= 15:
                 #print "Patches to be had"
                 self.patchicon = ICON_LOCATION + "rcross.png"
                 self.healthscore -= 1
@@ -115,7 +115,7 @@ class TaskBarIcon(wx.TaskBarIcon):
         if self.lversion == 0:
             cmdOutput = subprocess.check_output(["yum check-update | wc -l"],shell=True)
             if cmdOutput >= 2:
-                print "Patches to be had"
+                #print "Patches to be had"
                 #self.TRAY_ICON = "icon_red.png"
                 self.patchicon = ICON_LOCATION + "rcross.png"
                 self.healthscore -= 1
