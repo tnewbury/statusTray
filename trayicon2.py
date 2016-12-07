@@ -5,7 +5,7 @@ import time
 import subprocess
 import re
 
-
+ICON_LOCATION = '/some/path'
 TRAY_TOOLTIP = 'Backup/patch system'
 #TRAY_ICON = 'icon.png'
 
@@ -21,10 +21,10 @@ class TaskBarIcon(wx.TaskBarIcon):
     def __init__(self, frame):
 
         self.checkpatches = 0
-        self.TRAY_ICON = 'icon.png'
-	self.patchicon = 'gtick.png'
-        self.backupicon = 'gtick.png'
-        self.restoreicon = 'gtick.png'
+        self.TRAY_ICON = ICON_LOCATION + 'icon.png'
+	self.patchicon = ICON_LOCATION + 'gtick.png'
+        self.backupicon = ICON_LOCATION + 'gtick.png'
+        self.restoreicon = ICON_LOCATION + 'gtick.png'
         self.healthscore = 3
 
         self.frame = frame
@@ -47,7 +47,7 @@ class TaskBarIcon(wx.TaskBarIcon):
         create_menu_item(menu, '&Restore', self.on_restore, self.restoreicon)
 	create_menu_item(menu, '&Patched', self.on_patches, self.patchicon)
         menu.AppendSeparator()
-        create_menu_item(menu, 'E&xit', self.on_exit, 'rcross.png')
+        create_menu_item(menu, 'E&xit', self.on_exit, ICON_LOCATION + 'rcross.png')
 	return menu
 
     def set_icon(self, path):
@@ -55,7 +55,7 @@ class TaskBarIcon(wx.TaskBarIcon):
         self.SetIcon(icon, TRAY_TOOLTIP)
 
     def on_left_down(self, event):
-        print 'Tray icon was left-clicked.'
+        cmdOutput = subprocess.Popen(["sudo apt-get update; sudo apt-get -y upgrade"],shell=True,stdout=subprocess.PIPE)
         
     def on_update(self, event):
         #if self.TRAY_ICON == "icon.png":
@@ -65,31 +65,32 @@ class TaskBarIcon(wx.TaskBarIcon):
 	self.checkpatches += 1
         if self.checkpatches == 3600:
                 self.on_patches(wx.EVT_TASKBAR_LEFT_DOWN)
+                self.checkpatches = 0
         if self.healthscore >= 3:
-                self.TRAY_ICON = "icon_green.png"
+                self.TRAY_ICON = ICON_LOCATION + "icon_green.png"
         else:
-                self.TRAY_ICON = "icon_red.png"
+                self.TRAY_ICON = ICON_LOCATION + "icon_red.png"
         self.set_icon(self.TRAY_ICON)
 
 
     def on_backup(self, event):
-        cmdOutput = subprocess.Popen(["zenity --warning --text 'Backing up your shit'"],shell=True,stdout=subprocess.PIPE) 
-        self.TRAY_ICON = "icon_red.png"
-        self.backupicon = "gup.png"
+        cmdOutput = subprocess.Popen(["zenity --warning --text 'Backing up your files'"],shell=True,stdout=subprocess.PIPE) 
+        self.TRAY_ICON = ICON_LOCATION + "icon_red.png"
+        self.backupicon = ICON_LOCATION + "gup.png"
         self.healthscore -= 1
         cmdOutput = subprocess.Popen(["lsyncd -nodaemon -rsync /home/`whoami`/ /nfs/test/"],shell=True,stdout=subprocess.PIPE)
-        self.TRAY_ICON = "icon_green.png"
-        self.backupicon = "gtick.png"
+        self.TRAY_ICON = ICON_LOCATION + "icon_green.png"
+        self.backupicon = ICON_LOCATION + "gtick.png"
         self.healthscore += 1
 
     def on_restore(self, event):
-        cmdOutput = subprocess.Popen(["zenity --warning --text 'Restoring. Youre shit'"],shell=True,stdout=subprocess.PIPE)
-        self.TRAY_ICON = "icon.png"
-        self.restoreicon = "gdown.png"
+        cmdOutput = subprocess.Popen(["zenity --warning --text 'Restoring your files'"],shell=True,stdout=subprocess.PIPE)
+        self.TRAY_ICON = ICON_LOCATION + "icon.png"
+        self.restoreicon = ICON_LOCATION + "gdown.png"
         self.healthscore -= 1 
         cmdOutput = subprocess.Popen(["lsyncd -nodaemon -rsync /nfs/test /home/`whoami`"],shell=True,stdout=subprocess.PIPE)
-        self.TRAY_ICON = "icon_green.png"
-        self.restoreicon = "gtick.png"
+        self.TRAY_ICON = ICON_LOCATION + "icon_green.png"
+        self.restoreicon = ICON_LOCATION + "gtick.png"
         self.healthscore += 1
 
     def on_patches(self, event):
@@ -98,12 +99,10 @@ class TaskBarIcon(wx.TaskBarIcon):
             cmdOutput = subprocess.check_output(["apt-get upgrade -s | wc -l"],shell=True)
 	    if cmdOutput >= 10:
                 print "Patches to be had"
-                #self.TRAY_ICON = "icon_red.png"
-                self.patchicon = "rcross.png"
+                self.patchicon = ICON_LOCATION + "rcross.png"
                 self.healthscore -= 1
             else:
-                #self.TRAY_ICON = "icon_green.png"
-                self.patchicon = "gtick.png"
+                self.patchicon = ICON_LOCATION + "gtick.png"
                 self.healthscore = 3
                 
         if self.lversion == 0:
@@ -111,11 +110,11 @@ class TaskBarIcon(wx.TaskBarIcon):
             if cmdOutput >= 2:
                 print "Patches to be had"
                 #self.TRAY_ICON = "icon_red.png"
-                self.patchicon = "rcross.png"
+                self.patchicon = ICON_LOCATION + "rcross.png"
                 self.healthscore -= 1
             else:
                 #self.TRAY_ICON = "icon_green.png"
-                self.patchicon = "gtick.png"
+                self.patchicon = ICON_LOCATION + "gtick.png"
                 self.healthscore = 3
 
     def on_exit(self, event):
